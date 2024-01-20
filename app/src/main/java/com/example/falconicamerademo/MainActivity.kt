@@ -1,6 +1,8 @@
 package com.example.falconicamerademo
 
 import android.app.Activity
+import android.content.ContentResolver
+import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -43,12 +45,26 @@ class MainActivity : AppCompatActivity() {
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
                 val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+                val imagePath: Uri? = createImage()
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imagePath)
                 takePictureLauncher.launch(takePictureIntent)
             } else {
                 // Handle the case where camera permission is not granted
                 // You may want to request the permission here
             }
         }
+    }
+
+    private fun createImage(): Uri? {
+        val resolver = this.contentResolver
+        var imageUri: Uri? = null
+        imageUri = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+        val imageName = System.currentTimeMillis().toString()
+        val contentValues = ContentValues()
+        contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, "$imageName.jpg")
+        contentValues.put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures" + "/FalconI")
+        val finalUri = resolver.insert(imageUri, contentValues)
+        return finalUri
     }
 
     private fun saveImageToGallery(bitmap: Bitmap) {
